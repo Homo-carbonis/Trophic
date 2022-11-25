@@ -27,15 +27,18 @@
 #include <png++/solid_pixel_buffer.hpp>
 #include <cstdint>
 #include "uniform.hpp"
-#include "matrixTransform.hpp"
+#include "reactive/reactive.hpp"
+#include "reactive/transform.hpp"
+#include "reactive/inputs.hpp"
 using namespace std;
 
 class Camera {
   public:
-    Camera(glm::mat3 transform)
-      : uniform(0) { setTransform(transform); }
-    void setTransform(glm::mat3 t) { uniform.set(t); }
+    Camera(reactive::SignalPtr<glm::mat3> signal)
+      : uniform(0), signal(signal) { update(0); }
+    void update(float t) { uniform.set((*signal)(t)); }
   private:
+    reactive::SignalPtr<glm::mat3> signal;
     Uniform<glm::mat3> uniform;
 };
 
@@ -141,35 +144,32 @@ class EventHandler {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
           windowWidth = (float)e.data1;
           windowHeight = (float)e.data2;
-          //camera.setAspect(windowWidth/windowHeight); break;
+          glViewport(0, 0, windowWidth, windowHeight);
       }
     }
     void handleMouseMotion(SDL_MouseMotionEvent e)
     {
       if (e.state & SDL_BUTTON_LMASK) {
-        //camera.translate({2*(float)e.xrel/windowWidth,-2*(float)e.yrel/windowHeight});
-        //camera.update(0);
       }
     }
     void handleMouseWheel(SDL_MouseWheelEvent e)
     {
-      //camera.scale((float)e.y+1.5);
-      //camera.update(0);
     }
     SDL_Event event;
     Camera& camera;
     float windowWidth, windowHeight;
 };
 
+
 class World {
   public:
     World()
       : context("Trophic", {800,600}),
-      program{loadShader<VertexShader>("vert.glsl"),
-        loadShader<GeometryShader>("geom.glsl"),
-        loadShader<FragmentShader>("frag.glsl")},
+      program{loadShader<VertexShader>("shaders/vert.glsl"),
+        loadShader<GeometryShader>("shaders/geom.glsl"),
+        loadShader<FragmentShader>("shaders/frag.glsl")},
       vbo(vao.newBuffer(0,GL_STREAM_DRAW)),
-      camera(matrix::scale(1.0)),
+      camera( reactive::windowScale(context.window) * reactive::translate(reactive::mousePosition(context.window)) * reactive::scale(reactive::constant((float)0.1))),
       handler(camera) {}
     Sprite& newSprite(Texture& texture)
     {
@@ -191,6 +191,7 @@ class World {
         t2=SDL_GetTicks();
         dt=t2-t1;
         t1=t2;
+        camera.update((float)t1);
         draw(t1);
       }
     }

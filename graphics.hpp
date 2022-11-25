@@ -12,6 +12,8 @@
 // You should have received a copy of the GNU General Public License along with this
 // program. If not, see <https://www.gnu.org/licenses/>. 
 
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <GL/glew.h>
@@ -267,14 +269,14 @@ class Window : public Raii {
     context(SDL_GL_CreateContext(object())) {}
   void swap() { SDL_GL_SwapWindow(object()); }
   void size(glm::ivec2 s) { SDL_SetWindowSize(object(), s[0], s[1]); }
-  glm::ivec2 size()
+  glm::ivec2 size() const
   {
     int w,h;
     SDL_GetWindowSize(object(), &w,&h);
     return {w,h};
   }
 
-  SDL_Window* object() { return any_cast<SDL_Window*>(object_); }
+  SDL_Window* object() const { return any_cast<SDL_Window*>(object_); }
   ~Window() { if (hasObject()) SDL_DestroyWindow(object()); }
   Window(Window&&) = default;
   Window& operator=(Window&&) = default;
@@ -307,7 +309,7 @@ class Context {
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
       SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG); 
-      Window win(title.c_str(), {0, 0}, size, SDL_WINDOW_OPENGL);
+      Window win(title.c_str(), {0, 0}, size, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
       window = move(win);
       glewExperimental = GL_TRUE;
       glewInit();
@@ -319,3 +321,4 @@ class Context {
   private: 
 
 };
+#endif
