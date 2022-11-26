@@ -197,5 +197,48 @@ namespace reactive {
   {
     return makeSignal<A>([=](float t){ return a / (*b)(t); } );
   }
+
+  template<typename A>
+  auto abs(SignalPtr<A> a)
+  {
+    return makeSignal<A>([=](float t){ return std::abs((*a)(t)); } );
+  }
+
+  template<typename A, typename B>
+  auto max(SignalPtr<A> a, SignalPtr<B> b)
+  {
+    return makeSignal<A>([=](float t){ return std::max((*a)(t),(*b)(t)); } );
+  }
+
+  template<typename A, typename B>
+  auto max(SignalPtr<A> a, B b)
+  {
+    return makeSignal<A>([=](float t){ return std::max((*a)(t),b); } );
+  }
+
+  template<typename A, typename B>
+  auto max(A a, SignalPtr<B> b)
+  {
+    return makeSignal<A>([=](float t){ return std::max(a,(*b)(t)); } );
+  }
+
+  template<typename A, typename B>
+  auto min(SignalPtr<A> a, SignalPtr<B> b)
+  {
+    return makeSignal<A>([=](float t){ return std::min((*a)(t),(*b)(t)); } );
+  }
+
+  template<typename A, typename B>
+  auto min(SignalPtr<A> a, B b)
+  {
+    return makeSignal<A>([=](float t){ return std::min((*a)(t),b); } );
+  }
+
+  template<typename A, typename B>
+  auto min(A a, SignalPtr<B> b)
+  {
+    return makeSignal<A>([=](float t){ return std::min(a,(*b)(t)); } );
+  }
+
 }
 #endif

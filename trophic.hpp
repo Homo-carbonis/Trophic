@@ -90,76 +90,6 @@ class Sprite {
     contiguous_map<int,SpriteVertex> vertices;
 };
 
-class EventHandler {
-  public:
-    EventHandler(Camera& camera) : camera(camera) {}
-    bool handle() {
-      while(SDL_PollEvent(&event)) {
-        switch (event.type) {
-          case SDL_AUDIODEVICEADDED: break;
-          case SDL_AUDIODEVICEREMOVED: break;
-          case SDL_CONTROLLERAXISMOTION: break;
-          case SDL_CONTROLLERBUTTONDOWN: break;
-          case SDL_CONTROLLERBUTTONUP: break;
-          case SDL_CONTROLLERDEVICEADDED: break;
-          case SDL_CONTROLLERDEVICEREMOVED: break;
-          case SDL_CONTROLLERDEVICEREMAPPED: break;
-          case SDL_DOLLARGESTURE: break;
-          case SDL_DOLLARRECORD: break;
-          case SDL_DROPFILE: break;
-          case SDL_DROPTEXT: break;
-          case SDL_DROPBEGIN: break;
-          case SDL_DROPCOMPLETE: break;
-          case SDL_FINGERMOTION: break;
-          case SDL_FINGERDOWN: break;
-          case SDL_FINGERUP: break;
-          case SDL_KEYDOWN: break;
-          case SDL_KEYUP: break;
-          case SDL_JOYAXISMOTION: break;
-          case SDL_JOYBALLMOTION: break;
-          case SDL_JOYHATMOTION: break;
-          case SDL_JOYBUTTONDOWN: break;
-          case SDL_JOYBUTTONUP: break;
-          case SDL_JOYDEVICEADDED: break;
-          case SDL_JOYDEVICEREMOVED: break;
-          case SDL_MOUSEMOTION: handleMouseMotion(event.motion); break;
-          case SDL_MOUSEBUTTONDOWN: break;
-          case SDL_MOUSEBUTTONUP: break;
-          case SDL_MOUSEWHEEL: handleMouseWheel(event.wheel); break;
-          case SDL_MULTIGESTURE: break;
-          case SDL_QUIT: return false;
-          case SDL_SYSWMEVENT: break;
-          case SDL_TEXTEDITING: break;
-          case SDL_TEXTINPUT: break;
-          case SDL_USEREVENT: break;
-          case SDL_WINDOWEVENT: handleWindow(event.window); break;
-        }
-      }
-      return true;
-    }
-  private:
-    void handleWindow(SDL_WindowEvent e)
-    {
-      switch (e.event) {
-        case SDL_WINDOWEVENT_SIZE_CHANGED:
-          windowWidth = (float)e.data1;
-          windowHeight = (float)e.data2;
-          glViewport(0, 0, windowWidth, windowHeight);
-      }
-    }
-    void handleMouseMotion(SDL_MouseMotionEvent e)
-    {
-      if (e.state & SDL_BUTTON_LMASK) {
-      }
-    }
-    void handleMouseWheel(SDL_MouseWheelEvent e)
-    {
-    }
-    SDL_Event event;
-    Camera& camera;
-    float windowWidth, windowHeight;
-};
-
 
 class World {
   public:
@@ -169,8 +99,8 @@ class World {
         loadShader<GeometryShader>("shaders/geom.glsl"),
         loadShader<FragmentShader>("shaders/frag.glsl")},
       vbo(vao.newBuffer(0,GL_STREAM_DRAW)),
-      camera( reactive::windowScale(context.window) * reactive::translate(reactive::mousePosition(context.window)) * reactive::scale(reactive::constant((float)0.1))),
-      handler(camera) {}
+      camera( reactive::windowScale() * reactive::translate(reactive::mousePosition()) * reactive::scale((reactive::abs(reactive::mouseWheel())+1)*0.01)),
+      handler(reactive::Handler::getInstance()) {}
     Sprite& newSprite(Texture& texture)
     {
       sprites.emplace_back(vbo, texture);
@@ -186,7 +116,7 @@ class World {
     void run() 
     {
       uint32_t t1, t2, dt = 0;
-      while (handler.handle())
+      while (handler->handle())
       {
         t2=SDL_GetTicks();
         dt=t2-t1;
@@ -203,5 +133,5 @@ class World {
     SDL_Event event;
     vector<Sprite> sprites;
     Camera camera;
-    EventHandler handler;
+    reactive::Handler* handler;
 };
