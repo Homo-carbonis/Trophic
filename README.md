@@ -5,4 +5,4 @@ Trophic is a C++ graphics library and OpenGL wrapper, designed with 2D graphics 
 - Uses templates to automatically generate code for any vertex format
 - RAII for all objects guarantees resources are freed when no longer required
 - Includes shaders to draw huge numbers of sprites efficiently
-- Work in progress but fully functional
+- Proof of concept but usable.
